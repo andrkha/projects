@@ -1,0 +1,146 @@
+openapi: 3.0.0
+info:
+  title: Registration API
+  version: 1.0.0
+servers:
+  - url: https://testcaseopenAPI/v1
+paths:
+  /register:
+    post:
+      summary: Регистрация нового пользователя
+      operationId: registerUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+                - name
+              properties:
+                email:
+                  type: string
+                  format: email
+                  description: Адрес электронной почты
+                  example: andre@inbox.ru
+                password:
+                  type: string
+                  minLength: 8
+                  pattern: '^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*]).{8,}$'
+                  description: |
+                    Пароль должен содержать:
+                    - не менее 8 символов
+                    - как минимум одну цифру (0-9)
+                    - как минимум одну заглавную букву (A-Z)
+                    - как минимум одну строчную букву (a-z)
+                    - как минимум один специальный символ
+                  example: Password123!
+                name:
+                  type: string
+                  minLength: 2
+                  maxLength: 50
+                  description: Имя пользователя
+                  example: Андрей
+                last_name:
+                  type: string
+                  minLength: 2
+                  maxLength: 50
+                  description: Фамилия пользователя
+                  example: Харитонов
+                captcha:
+                  type: boolean
+                  description: i'am not a robot
+                  example: true
+            examples:
+              Успешная регистрация:
+                summary: Без ошибок
+                value:
+                  email: andre@inbox.ru
+                  password: Password123!
+                  name: Андрей
+                  last_name: Харитонов
+                  captcha: true
+              Регистрация с ошибкой в пароле:
+                summary: Нет специального знака
+                value:
+                  email: rabota@mail.ru
+                  password: Qwerty123
+                  name: junior
+                  captcha: true
+              Регистрация с ошибкой в почте:
+                summary: Несоответствие типу email
+                value:
+                  email: internship@mail
+                  password: Abvgd2026!
+                  name: experience
+                  captcha: true
+              Регистрация если вы робот:
+                summary: отсутствие галочки на капче
+                value:
+                  email: qwerty@mail.ru
+                  password: Qwerty123!
+                  name: robot
+                  captcha: false
+      responses:
+        '201':
+          description: Пользователь успешно создан
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    description: ID созданного пользователя
+                    example: 123
+                  message:
+                    type: string
+                    example: User registered successfully.
+        '400':
+          description: Некорректный запрос
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Bad request.
+        '409':
+          description: Конфликт (пользователь уже существует)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: user exists!
+        '422':
+          description: Ошибка валидации
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  errors:
+                    type: object
+                    properties:
+                      password:
+                        type: string
+                        example: |
+                          Passwords must have at least one non alphanumeric
+                          character, one digit('0'-'9'), one uppercase('A'-'Z'),
+                          one lowercase('a'-'z'), one special character and
+                          Passwords must be eight characters or longer.
+                      captcha:
+                        type: string
+                        example: Please verify reCaptcha to register!
+                      email: 
+                        type: string
+                        example: mail entered incorrectly!
+                      name: 
+                        type: string
+                        example: incorrect name!

@@ -1,0 +1,41 @@
+@startuml
+actor "Продавец" as sel
+participant "Личный кабинет" as cab
+participant "Бэкенд" as back
+participant "База данных" as db
+participant "Сервис модерации" as mod
+
+sel -> cab: Заполняет карточку товара
+sel -> cab: Нажимает "Опубликовать"
+activate cab
+
+cab -> back: POST /api/products
+activate back
+
+back -> back: Валидация данных
+alt данные невалидны
+  back --> cab: 422 Unprocessable
+  cab --> sel: Показать ошибки
+else данные валидны
+  back -> db: Сохранить товар (статус "Черновик")
+  activate db
+  db --> back: OK
+  deactivate db
+  
+  back -> mod: Отправить товар на проверку
+  activate mod
+  mod --> back: Задача принята
+  deactivate mod
+  
+  back -> db: Обновить статус: "На проверке"
+  activate db
+  db --> back: OK
+  deactivate db
+  
+  back --> cab: 201 Created
+  deactivate back
+  
+  cab --> sel: Успех, товар на модерации
+  deactivate cab
+end
+@enduml

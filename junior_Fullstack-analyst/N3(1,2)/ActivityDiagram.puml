@@ -1,0 +1,65 @@
+@startuml
+
+start
+:Получить запрос POST/register;
+
+:Проверить тело запроса;
+if (Отсутствует?) then (да)
+:Вернуть ошибку "400 Bad request.";
+stop
+else (Нет)
+endif
+
+:Проверить наличие всех обязательных полей
+(email, password, name, captcha);
+
+if (Обязательные поля отсутствуют?) then (да)
+  :Вернуть ошибку "error 400";
+  stop
+else (нет)
+endif
+
+:Проверить капчу(=true);
+if (несоответствие) then (да)
+:Вернуть ошибку "422 Please verify reCaptcha to register!";
+stop
+else (нет)
+endif
+
+:Валидация email;
+if (несоответствие) then (да)
+:Вернуть ошибку "422 mail entered incorrectly!";
+stop
+else (нет)
+endif
+
+--Фамилия не обязательна.
+:Валидация имени;
+if (несоответствие) then (да)
+:Вернуть ошибку "422 incorrect first or last name!";
+stop 
+else (нет)
+endif
+
+:Валидация пароля;
+if (несоответствие) then (да)
+:Вернуть ошибку "422 Passwords must have...";
+stop 
+else (нет)
+endif 
+
+
+:Проверить зарегестрирован ли email в базе данных;
+if (email уже занят?) then (да)
+:Вернуть ошибку "409 User exists!";
+stop 
+else (нет)
+endif
+
+:Создать нового пользователя в бд;
+:Хэшировать пароль;
+:сгенерировать id;
+:Вернуть сообщение "id, 201 User Register successfully";
+stop
+
+@endumld
