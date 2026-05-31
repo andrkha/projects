@@ -1,0 +1,37 @@
+@startuml
+title Архитектура PUSH-уведомлений\n"Петрушка Зеленая"
+
+package "Сервисы-источники" {
+    [Order Service] as Order
+    [Cart Service] as Cart
+    [Promo Service] as Promo
+    [Scheduler] as Scheduler
+    [Other Service] as Other
+}
+
+queue "Message Queue\n(Kafka / RabbitMQ)" as Queue
+
+package "Push Dispatcher" {
+    [Обработка\nсобытия] as Process
+    [Отправка\nв FCM] as Send
+}
+
+database "Notification DB" as DB
+
+cloud "Firebase Cloud\nMessaging" as FCM
+
+actor "Мобильное\nприложение" as App
+
+Other --> Queue
+Order --> Queue
+Cart --> Queue
+Promo --> Queue
+Scheduler --> Queue
+
+Queue --> Process
+Process --> DB : шаблон, токен, история
+Process --> Send
+Send --> FCM
+FCM --> App
+
+@enduml
